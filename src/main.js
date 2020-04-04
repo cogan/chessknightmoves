@@ -165,6 +165,11 @@ var hKnightStartSquare = getRandomSquare();
 config['position'] = {}
 config['position'][hKnightStartSquare] = 'wN'
 
+// Prevent the screen from scrolling on mobile when we are trying to play.
+$('#board').bind('touchmove', function(e) {
+    e.preventDefault();
+});
+
 var board = Chessboard('board', config);
 
 // Pick a random square for the destination, and make sure it's not the same
