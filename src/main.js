@@ -10,6 +10,10 @@
 // When squares are in human notation, the h prefix is used, e.g. hSquare. When
 // squares are in computer 0x88 notation, the c prefix is used (e.g. cSquare).
 
+// global variables, initialized later (yay)
+var board = null;
+var hTargetSquare = null;
+
 var PIECE_OFFSETS = {
   n: [-18, -33, -31, -14, 18, 33, 31, 14],
   b: [-17, -15, 17, 15],
@@ -79,9 +83,9 @@ function onDrop(hSource, hTarget) {
     return;
   }
 
-  capture = checkForCaptures(cTarget);
-  if (capture !== undefined) {
-    var captureString = capture['hFrom'] + '-' + capture['hTo'];
+  hCapture = hCheckForCaptures(cTarget);
+  if (hCapture !== undefined) {
+    var captureString = hCapture['from'] + '-' + hCapture['to'];
     window.setTimeout(function() {
       board.move(captureString);
       window.setTimeout(function() {
@@ -91,7 +95,7 @@ function onDrop(hSource, hTarget) {
   }
 }
 
-function checkForCaptures(cKnightSquare) {
+function hCheckForCaptures(cKnightSquare) {
   var position = board.position();
   for (hSquare in position) {
     var piece = position[hSquare];
@@ -99,30 +103,47 @@ function checkForCaptures(cKnightSquare) {
       continue;
     }
 
-    moves = generateMoves(piece, hSquare);
+    moves = hGenerateAttackedSquares(piece, hSquare);
     hKnightSquare = toHumanSquare(cKnightSquare);
     for (move of moves) {
-      if (move['hTo'] == hKnightSquare) {
+      if (move['to'] == hKnightSquare) {
         return move;
       }
     }
   }
 }
 
+function hGenerateAllAttackedSquares() {
+  hAttackedSquares = new Set();
 
-function generateMoves(piece, hSquare) {
+  var position = board.position();
+  for (hSquare in position) {
+    var piece = position[hSquare];
+    if (piece.search(/^b/) !== 0) {
+      continue;
+    }
+
+    hMoves = hGenerateAttackedSquares(piece, hSquare);
+    for (hMove of hMoves) {
+      hAttackedSquares.add(hMove['to'])
+    }
+  }
+  return [...hAttackedSquares];
+}
+
+function hGenerateAttackedSquares(piece, hSquare) {
   var moves = [];
 
   var cSquare = toComputerSquare(hSquare);
-  var piece_type = piece[1].toLowerCase();
+  var pieceType = piece[1].toLowerCase();
 
   // TODO(cogan): add pawn logic later.
-  if (piece_type == 'p') {
+  if (pieceType == 'p') {
     return;
   }
 
-  for (var j = 0, len = PIECE_OFFSETS[piece_type].length; j < len; j++) {
-    var offset = PIECE_OFFSETS[piece_type][j];
+  for (var j = 0, len = PIECE_OFFSETS[pieceType].length; j < len; j++) {
+    var offset = PIECE_OFFSETS[pieceType][j];
     var cOffsetSquare = cSquare;
 
     while (true) {
@@ -132,8 +153,8 @@ function generateMoves(piece, hSquare) {
       }
 
       moves.push({
-        'hFrom': hSquare,
-        'hTo': toHumanSquare(cOffsetSquare),
+        'from': hSquare,
+        'to': toHumanSquare(cOffsetSquare),
       });
       // TODO(cogan): need a way to get what pieces are on the board
       // check if it's hitting our own piece
@@ -143,11 +164,108 @@ function generateMoves(piece, hSquare) {
   return moves;
 }
 
-function getRandomSquare() {
-    var rank = Math.floor(Math.random() * 8) + 1;
-    var fileNumeric = Math.floor(Math.random() * 8) + 1;
-    var file = String.fromCharCode(fileNumeric + 96);
-    return file + rank;
+function hGetRandomSquare() {
+  var rank = Math.floor(Math.random() * 8) + 1;
+  var fileNumeric = Math.floor(Math.random() * 8) + 1;
+  var file = String.fromCharCode(fileNumeric + 96);
+  return file + rank;
+}
+
+function hGetRandomSquareExcluding(hExcludedSquares) {
+  var hSquare = hGetRandomSquare();
+  while (hExcludedSquares.includes(hSquare)) {
+    hSquare = hGetRandomSquare();
+  }
+  return hSquare;
+}
+
+function hCalculateKnightPath(hStart, hDest) {
+  var cStart = toComputerSquare(hStart);
+  var cDest = toComputerSquare(hDest);
+
+  var hBlackAttackedSquares = hGenerateAllAttackedSquares();
+
+  var cBlackAttackedSquares = hBlackAttackedSquares.map(
+    hSquare => toComputerSquare(hSquare));
+
+  var queue = [];
+  queue.push([cStart]);
+
+  while (queue.length !== 0) {
+    var queueEntry = queue.pop();
+    var cSquare = queueEntry[queueEntry.length - 1];
+    for (var j = 0, len = PIECE_OFFSETS['n'].length; j < len; j++) {
+      var offset = PIECE_OFFSETS['n'][j];
+      var cOffsetSquare = cSquare + offset;
+      if (cOffsetSquare & 0x88) {
+        // we're off the board.
+        continue;
+      }
+      if (queueEntry.includes(cOffsetSquare)) {
+        // we've already visited this square.
+        continue;
+      }
+      if (cBlackAttackedSquares.includes(cOffsetSquare)) {
+        // this square is not safe!
+        continue;
+      }
+      // TODO(cogan): if we ever have friendly pieces on the board, we need
+      // to take them into account, because they can block our path.
+      if (cOffsetSquare === cDest) {
+        // we found our destination!
+        queueEntry.push(cOffsetSquare);
+        return queueEntry;
+      }
+
+      // otherwise, keep searching.
+      var newEntry = queueEntry.slice();
+      newEntry.push(cOffsetSquare);
+      queue.push(newEntry);
+    }
+  }
+  return 'impossible'
+}
+
+function generateRandomPosition() {
+  for (var i = 0; i < 100; i++) {
+    hUsedSquares = [];
+    var hKnightStartSquare = hGetRandomSquare();
+    hUsedSquares.push(hKnightStartSquare);
+    var hTargetSquare = hGetRandomSquareExcluding(hUsedSquares);
+    hUsedSquares.push(hTargetSquare);
+    var hBlackQueenSquare = hGetRandomSquareExcluding(hUsedSquares);
+    hUsedSquares.push(hBlackQueenSquare);
+    var hBlackRookSquare = hGetRandomSquareExcluding(hUsedSquares);
+    hUsedSquares.push(hBlackRookSquare);
+    var hBlackBishopSquare = hGetRandomSquareExcluding(hUsedSquares);
+    hUsedSquares.push(hBlackBishopSquare);
+
+    var testConfig = {};
+    testConfig['position'] = {};
+    testConfig['position'][hKnightStartSquare] = 'wN';
+    testConfig['position'][hBlackQueenSquare] = 'bQ';
+    testConfig['position'][hBlackRookSquare] = 'bR';
+    testConfig['position'][hBlackBishopSquare] = 'bB';
+
+    board = Chessboard('board', testConfig);
+
+    var hBlackAttackedSquares = hGenerateAllAttackedSquares();
+    if (hBlackAttackedSquares.includes(hKnightStartSquare)) {
+      continue;
+    }
+
+    hPath = hCalculateKnightPath(hKnightStartSquare, hTargetSquare);
+    if (hPath === 'impossible') {
+      continue;
+    }
+
+    console.log("took " + (i + 1) + " attempt(s) to generate a position.");
+    return {
+      position: testConfig['position'],
+      hTargetSquare: hTargetSquare,
+    }
+  }
+  return 'error';
 }
 
 // Initialize the chessboard.
@@ -160,23 +278,16 @@ var config = {
   onDrop: onDrop,
 };
 
-// Put the knight on a random square.
-var hKnightStartSquare = getRandomSquare();
-config['position'] = {}
-config['position'][hKnightStartSquare] = 'wN'
+var generatedPosition = generateRandomPosition();
+config['position'] = generatedPosition.position;
 
 // Prevent the screen from scrolling on mobile when we are trying to play.
 $('#board').bind('touchmove', function(e) {
     e.preventDefault();
 });
 
-var board = Chessboard('board', config);
+board = Chessboard('board', config);
 
-// Pick a random square for the destination, and make sure it's not the same
-// as the square we're starting on!
-var hTargetSquare = getRandomSquare();
-while (hTargetSquare === hKnightStartSquare) {
-  hTargetSquare = getRandomSquare();
-}
+hTargetSquare = generatedPosition.hTargetSquare;
 var $square = $('#board .square-' + hTargetSquare);
 $square.css('background', '#87097b');
