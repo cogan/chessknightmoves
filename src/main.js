@@ -214,7 +214,8 @@ function hCalculateKnightPath(hStart, hDest) {
       if (cOffsetSquare === cDest) {
         // we found our destination!
         queueEntry.push(cOffsetSquare);
-        return queueEntry;
+        var hPath = queueEntry.map(cSquare => toHumanSquare(cSquare));
+        return hPath;
       }
 
       // otherwise, keep searching.
