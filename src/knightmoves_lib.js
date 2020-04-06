@@ -120,17 +120,11 @@ function generateAttackedSquares(board, piece, square) {
 
       let pieceOnSquare = cPosition[cOffsetSquare];
       if (pieceOnSquare !== undefined) {
-        if (isBlackPiece(pieceOnSquare)) {
-          break;
-        } else {
-          // Must be a white piece. We can attack it, but we can't go any
-          // further.
-          moves.push({
-            'from': square,
-            'to': toHumanSquare(cOffsetSquare),
-          });
-          break;
-        }
+        moves.push({
+          'from': square,
+          'to': toHumanSquare(cOffsetSquare),
+        });
+        break;
       }
 
       moves.push({
