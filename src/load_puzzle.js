@@ -69,8 +69,8 @@ let config = {
   onDrop: onDrop,
 };
 
-let encodedGameState = getUrlParameter('puzzle');
-let gameState = JSON.parse(atob(encodedGameState));
+let encodedGameState = getUrlParameter('puzzle_code');
+let gameState = decodeGameState(encodedGameState);
 
 config['position'] = gameState.position;
 

@@ -201,3 +201,14 @@ function calculateKnightPath(board, start, dest) {
   }
   return 'impossible'
 }
+
+function encodeGameState(board, flagLocation) {
+  let gameState = {}
+  gameState.position = board.position();
+  gameState.flag = flagLocation;
+  return btoa(JSON.stringify(gameState));
+}
+
+function decodeGameState(encodedGameState) {
+  return JSON.parse(atob(encodedGameState));
+}

@@ -177,14 +177,11 @@ function validatePuzzle() {
 }
 
 function generateLink() {
-  let gameState = {}
-  gameState.position = board.position();
-  gameState.flag = flagLocation;
-  let encodedGameState = encodeURIComponent(btoa(JSON.stringify(gameState)));
+  let encodedGameState = encodeGameState(board, flagLocation);
 
   let currentUrl = window.location.href;
   let puzzleUrl = currentUrl.replace('puzzle_editor.html', 'load_puzzle.html');
-  puzzleUrl += '?puzzle=' + encodedGameState;
+  puzzleUrl += '?puzzle_code=' + encodeURIComponent(encodedGameState);
   console.log(puzzleUrl);
 }
 
