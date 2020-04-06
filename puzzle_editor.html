@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script defer src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script defer src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
+    <script defer src="src/knightmoves_lib.js"></script>
+    <script defer src="src/puzzle_editor.js"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.css" />
+    <title>Knight Moves - Puzzle Editor</title>
+  </head>
+  <body>
+    <h1>♘ Puzzle Editor ♘</h1>
+    <div id="board" style="width: 400px"></div>
+    <br />
+    <button onclick="showAttacks()">Show Attacks</button>
+    <button onclick="hideAttacks()">Hide Attacks</button>
+    <button onclick="validatePuzzle()">Validate Puzzle</button>
+    <button onclick="generateLink()">Generate Link</button>
+  </body>
+</html>

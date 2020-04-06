@@ -13,6 +13,9 @@
 
 'use strict';
 
+// Constants.
+var SQUARE_SIZE = 49; // TODO(cogan): calculate via function.
+
 let PIECE_OFFSETS = {
   n: [-18, -33, -31, -14, 18, 33, 31, 14],
   b: [-17, -15, 17, 15],
@@ -120,17 +123,11 @@ function generateAttackedSquares(board, piece, square) {
 
       let pieceOnSquare = cPosition[cOffsetSquare];
       if (pieceOnSquare !== undefined) {
-        if (isBlackPiece(pieceOnSquare)) {
-          break;
-        } else {
-          // Must be a white piece. We can attack it, but we can't go any
-          // further.
-          moves.push({
-            'from': square,
-            'to': toHumanSquare(cOffsetSquare),
-          });
-          break;
-        }
+        moves.push({
+          'from': square,
+          'to': toHumanSquare(cOffsetSquare),
+        });
+        break;
       }
 
       moves.push({
@@ -203,4 +200,15 @@ function calculateKnightPath(board, start, dest) {
     }
   }
   return 'impossible'
+}
+
+function encodeGameState(board, flagLocation) {
+  let gameState = {}
+  gameState.position = board.position();
+  gameState.flag = flagLocation;
+  return btoa(JSON.stringify(gameState));
+}
+
+function decodeGameState(encodedGameState) {
+  return JSON.parse(atob(encodedGameState));
 }
