@@ -4,6 +4,7 @@
 
 // Global variables
 var board = null;
+var finishSquare = null;
 
 function onDragStart(source, piece, position, orientation) {
   if (!isWhitePiece(piece)) {
@@ -88,7 +89,6 @@ let config = {
   draggable: true,
   moveSpeed: 'slow',
   dropOffBoard: 'trash',
-  sparePieces: true,
   onDragStart: onDragStart,
   onDrop: onDrop,
 };
@@ -103,6 +103,10 @@ $('#board').bind('touchmove', function(e) {
 
 board = Chessboard('board', config);
 
-let finishSquare = generatedPosition.finishSquare;
-let $square = $('#board .square-' + finishSquare);
-$square.css('background', '#87097b');
+finishSquare = generatedPosition.finishSquare;
+
+$('#board .square-' + finishSquare).css({
+  'background-image': "url('img/green_flag.png')",
+  'background-repeat': 'no-repeat',
+  'background-size': `${SQUARE_SIZE}px ${SQUARE_SIZE}px`,
+})

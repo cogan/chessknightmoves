@@ -13,6 +13,9 @@
 
 'use strict';
 
+// Constants.
+var SQUARE_SIZE = 49; // TODO(cogan): calculate via function.
+
 let PIECE_OFFSETS = {
   n: [-18, -33, -31, -14, 18, 33, 31, 14],
   b: [-17, -15, 17, 15],

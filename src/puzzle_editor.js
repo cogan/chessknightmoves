@@ -5,7 +5,6 @@
 // Constants
 let INITIAL_FLAG_SQUARE = 'e5';
 let DRAGGED_FLAG_ID = 'dragged-flag';
-let SQUARE_SIZE = 49; // TODO(cogan): calculate via function.
 let DEFAULT_DRAG_THROTTLE_RATE = 20;
 
 // Global variables
@@ -167,6 +166,26 @@ function showAttacks() {
     $square = $('#board .square-' + square);
     $square.css('background-color', '#424bf5');
   }
+}
+
+function hideAttacks() {
+  clearBoard();
+}
+
+function validatePuzzle() {
+  // TODO(cogan)
+}
+
+function generateLink() {
+  let gameState = {}
+  gameState.position = board.position();
+  gameState.flag = flagLocation;
+  let encodedGameState = encodeURIComponent(btoa(JSON.stringify(gameState)));
+
+  let currentUrl = window.location.href;
+  let puzzleUrl = currentUrl.replace('puzzle_editor.html', 'load_puzzle.html');
+  puzzleUrl += '?puzzle=' + encodedGameState;
+  console.log(puzzleUrl);
 }
 
 function clearBoard() {
