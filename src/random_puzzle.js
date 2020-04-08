@@ -91,6 +91,7 @@ function generateRandomPosition() {
 
 function resetPuzzle() {
   board = Chessboard('board', config);
+  setDefaultBoardStyle();
   moves = 0;
   $('#moves-counter').html('moves: ' + moves);
   putFlagOnSquare(flagLocation);
