@@ -2,9 +2,18 @@
 
 'use strict';
 
+// Levels
+var LEVELS = {
+  1: 'eyJwb3NpdGlvbiI6eyJkNCI6IndOIiwiYTgiOiJiUSIsImI3IjoiYlIiLCJoMSI6ImJRIiwiZzIiOiJiUiJ9LCJmbGFnIjoiZTUifQ==',
+  2: 'eyJwb3NpdGlvbiI6eyJkNCI6IndOIiwiYTgiOiJiUSIsImI3IjoiYlIiLCJoMSI6ImJRIiwiZzIiOiJiUiJ9LCJmbGFnIjoiZTQifQ==',
+  3: '',
+}
+
 // Global variables
 var board = null;
 var flagLocation = null;
+var puzzleNum = -1;
+var moves = 0;
 
 function onDragStart(source, piece, position, orientation) {
   if (!isWhitePiece(piece)) {
@@ -20,6 +29,8 @@ function onDrop(source, target) {
   if (!PIECE_OFFSETS["n"].includes(offset)) {
     return 'snapback'
   }
+
+  $('#moves-counter').html('moves: ' + ++moves);
 
   // Check if any black piece can capture the knight.
   let capture = isCapturable(board, target);
@@ -42,18 +53,30 @@ function onDrop(source, target) {
   }
 }
 
-function loadPuzzle() {
-  let inputCode = $('#puzzle-input').val();
-  let gameState = decodeGameState(inputCode);
-
-  config['position'] = gameState.position;
-
-  board = Chessboard('board', config);
-  setDefaultBoardStyle();
-
-  flagLocation = gameState.flag;
-  putFlagOnSquare(flagLocation);
+function prevPuzzle() {
+  loadPuzzleNum(puzzleNum - 1);
 }
+
+function retryPuzzle() {
+  loadPuzzleNum(puzzleNum);
+}
+
+function nextPuzzle() {
+  loadPuzzleNum(puzzleNum + 1);
+}
+
+function loadPuzzleNum(num) {
+  window.location.href = window.location.pathname + '?puzzle=' + num;
+}
+
+let puzzleNumUrlParam = getUrlParameter('puzzle');
+if (puzzleNumUrlParam === "") {
+  window.location.href = window.location.pathname + '?puzzle=' + 1;
+}
+puzzleNum = parseInt(puzzleNumUrlParam);
+
+let encodedGameState = LEVELS[puzzleNum];
+let gameState = decodeGameState(encodedGameState);
 
 // Initialize the chessboard.
 let config = {
@@ -63,18 +86,15 @@ let config = {
   onDragStart: onDragStart,
   onDrop: onDrop,
 };
-
-let puzzleCodeUrlParam = getUrlParameter('puzzle_code');
-if (puzzleCodeUrlParam !== "")
-{
-  let gameState = decodeGameState(puzzleCodeUrlParam);
-  config['position'] = gameState.position;
-}
+config['position'] = gameState.position;
 
 board = Chessboard('board', config);
 setDefaultBoardStyle();
 
-if (puzzleCodeUrlParam !== "") {
-  flagLocation = gameState.flag;
-  putFlagOnSquare(flagLocation);
-}
+flagLocation = gameState.flag;
+putFlagOnSquare(flagLocation);
+
+$('#current-level').html('Level ' + puzzleNum);
+$('#moves-counter').html('moves: ' + moves);
+
+showAttacks();

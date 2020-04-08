@@ -13,9 +13,6 @@
 
 'use strict';
 
-// Constants.
-var SQUARE_SIZE = 49; // TODO(cogan): calculate via function.
-
 let PIECE_OFFSETS = {
   n: [-18, -33, -31, -14, 18, 33, 31, 14],
   b: [-17, -15, 17, 15],
@@ -202,9 +199,9 @@ function calculateKnightPath(board, start, dest) {
   return 'impossible'
 }
 
-function encodeGameState(board, flagLocation) {
+function encodeGameState(position, flagLocation) {
   let gameState = {}
-  gameState.position = board.position();
+  gameState.position = position;
   gameState.flag = flagLocation;
   return btoa(JSON.stringify(gameState));
 }

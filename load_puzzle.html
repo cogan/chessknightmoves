@@ -4,13 +4,39 @@
     <script defer src="node_modules/jquery/dist/jquery.min.js"></script>
     <script defer src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
     <script defer src="src/knightmoves_lib.js"></script>
+    <script defer src="src/chessboard_utils.js"></script>
     <script defer src="src/load_puzzle.js"></script>
+    <script defer src="src/load_last.js"></script>
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.css" />
     <title>Knight Moves - Load Puzzle</title>
   </head>
   <body>
-    <h1>♘ Load Puzzle ♘</h1>
-    <div id="board" style="width: 400px"></div>
+    <div class="left-nav">
+      <h3>Knight ♘ Moves</h3>
+      <ul>
+        <li><a href="index.html">Challenge Mode</a></li>
+        <li><a href="random_puzzle.html">Random Puzzle</a></li>
+        <li><a href="puzzle_editor.html">Puzzle Editor</a></li>
+        <li><a href="load_puzzle.html">Load Puzzle</a></li>
+      </ul>
+    </div>
+    <div id="container">
+      <div id="above-board">
+        <h1>Load Puzzle</h1>
+      </div>
+      <br />
+      <div id="board" style="width: 420px"></div>
+      <div id="below-board">
+        <br />
+        <div id="moves-container">
+          <div id="moves-counter"></div>
+        </div>
+        <br />
+        puzzle code:
+        <input id="puzzle-input" style="width:250px"></input>
+        <button onclick="loadPuzzle()">Load</button>
+      </div>
+    </div>
   </body>
 </html>
