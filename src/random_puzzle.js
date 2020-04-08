@@ -4,7 +4,10 @@
 
 // Global variables
 var board = null;
-var finishSquare = null;
+var config = null;
+var flagLocation = null;
+var moves = 0;
+var generatedPosition = null;
 
 function onDragStart(source, piece, position, orientation) {
   if (!isWhitePiece(piece)) {
@@ -21,6 +24,8 @@ function onDrop(source, target) {
     return 'snapback'
   }
 
+  $('#moves-counter').html('moves: ' + ++moves);
+
   // Check if any black piece can capture the knight.
   let capture = isCapturable(board, target);
   if (capture !== undefined) {
@@ -34,7 +39,7 @@ function onDrop(source, target) {
   }
 
   // Check if the knight made it to the finish.
-  if (target === finishSquare) {
+  if (target === flagLocation) {
     window.setTimeout(function() {
       alert('you win!')
     }, 250);
@@ -47,8 +52,8 @@ function generateRandomPosition() {
     let usedSquares = [];
     let knightStartSquare = getRandomSquare();
     usedSquares.push(knightStartSquare);
-    let finishSquare = getRandomSquareExcluding(usedSquares);
-    usedSquares.push(finishSquare);
+    let flagLocation = getRandomSquareExcluding(usedSquares);
+    usedSquares.push(flagLocation);
     let blackQueenSquare = getRandomSquareExcluding(usedSquares);
     usedSquares.push(blackQueenSquare);
     let blackRookSquare = getRandomSquareExcluding(usedSquares);
@@ -70,7 +75,7 @@ function generateRandomPosition() {
       continue;
     }
 
-    let path = calculateKnightPath(testBoard, knightStartSquare, finishSquare);
+    let path = calculateKnightPath(testBoard, knightStartSquare, flagLocation);
     if (path === 'impossible') {
       continue;
     }
@@ -78,35 +83,35 @@ function generateRandomPosition() {
     console.log("took " + (i + 1) + " attempt(s) to generate a position.");
     return {
       position: testConfig['position'],
-      finishSquare: finishSquare,
+      flagLocation: flagLocation,
     }
   }
   return 'error';
 }
 
+function resetPuzzle() {
+  board = Chessboard('board', config);
+  moves = 0;
+  $('#moves-counter').html('moves: ' + moves);
+  putFlagOnSquare(flagLocation);
+}
+
+generatedPosition = generateRandomPosition();
+
 // Initialize the chessboard.
-let config = {
+config = {
   draggable: true,
   moveSpeed: 'slow',
   dropOffBoard: 'trash',
   onDragStart: onDragStart,
   onDrop: onDrop,
 };
-
-let generatedPosition = generateRandomPosition();
 config['position'] = generatedPosition.position;
 
-// Prevent the screen from scrolling on mobile when we are trying to play.
-$('#board').bind('touchmove', function(e) {
-    e.preventDefault();
-});
-
 board = Chessboard('board', config);
+setDefaultBoardStyle();
 
-finishSquare = generatedPosition.finishSquare;
+flagLocation = generatedPosition.flagLocation;
+putFlagOnSquare(flagLocation);
 
-$('#board .square-' + finishSquare).css({
-  'background-image': "url('img/green_flag.png')",
-  'background-repeat': 'no-repeat',
-  'background-size': `${SQUARE_SIZE}px ${SQUARE_SIZE}px`,
-})
+$('#moves-counter').html('moves: ' + moves);

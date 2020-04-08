@@ -46,6 +46,11 @@ function stopDefault (evt) {
   evt.preventDefault()
 }
 
+function onDrop(source, target) {
+  let encodedGameState = encodeGameState(board.position(), flagLocation);
+  $('#puzzle-output').val(encodedGameState);
+}
+
 function mousedownSquare(evt) {
   let clickedSquare = $(this).attr('data-square')
   if (clickedSquare !== flagLocation) return;
@@ -68,10 +73,14 @@ function mouseupWindow(evt) {
   // do nothing if we are not dragging the flag
   if (!isDraggingFlag) return
 
-  // // get the location
+  // get the location
   var location = isXYOnSquare(evt.pageX, evt.pageY)
 
-  stopDraggedFlag(location);
+  dropDraggedFlagOnSquare(location);
+
+  // update the encoded game state.
+  let encodedGameState = encodeGameState(board.position(), flagLocation);
+  $('#puzzle-output').val(encodedGameState);
 }
 
 function beginDraggingFlag(source, x, y) {
@@ -106,24 +115,10 @@ function updateDraggedFlag(x, y) {
   // TODO: add highlight logic (optional)
 }
 
-function stopDraggedFlag(location) {
-  dropDraggedFlagOnSquare(location);
-}
-
 function dropDraggedFlagOnSquare(square) {
-  // TODO: calculate what square we're on
-  // change the
-
   flagLocation = square;
-
-  $('#board .square-' + flagLocation).css({
-    'background-image': "url('img/green_flag.png')",
-    'background-repeat': 'no-repeat',
-    'background-size': `${SQUARE_SIZE}px ${SQUARE_SIZE}px`,
-  })
-
+  putFlagOnSquare(flagLocation);
   isDraggingFlag = false;
-
   $draggedFlag.css('display', 'none')
 }
 
@@ -156,42 +151,21 @@ function isXYOnSquare(x, y) {
   return 'offboard';
 }
 
-function showAttacks() {
-  clearBoard();
-
-  let squares = generateAllAttackedSquares(board);
-  let $square = undefined;
-  for (let square of squares) {
-    // TODO(cogan): differentiate light and dark squares
-    $square = $('#board .square-' + square);
-    $square.css('background-color', '#424bf5');
-  }
-}
-
-function hideAttacks() {
-  clearBoard();
-}
-
 function validatePuzzle() {
   // TODO(cogan)
 }
 
 function generateLink() {
-  let encodedGameState = encodeGameState(board, flagLocation);
+  let encodedGameState = encodeGameState(board.position(), flagLocation);
 
   let currentUrl = window.location.href;
   let puzzleUrl = currentUrl.replace('puzzle_editor.html', 'load_puzzle.html');
   puzzleUrl += '?puzzle_code=' + encodeURIComponent(encodedGameState);
+  console.log(decodeGameState(encodedGameState));
+  console.log("encodedGameState")
+  console.log(encodedGameState);
+  console.log("puzzleUrl");
   console.log(puzzleUrl);
-}
-
-function clearBoard() {
-  $('#board .square-55d63').css('background', '');
-  $('#board .square-' + flagLocation).css({
-    'background-image': "url('img/green_flag.png')",
-    'background-repeat': 'no-repeat',
-    'background-size': `${SQUARE_SIZE}px ${SQUARE_SIZE}px`,
-  })
 }
 
 function buildFlagHtml(id, hidden) {
@@ -217,22 +191,15 @@ var config = {
   sparePieces: true,
   position: {
     d4: 'wN',
-  }
+  },
+  onDrop: onDrop,
 };
 
-// Prevent the screen from scrolling on mobile when we are trying to play.
-$('#board').bind('touchmove', function(e) {
-    e.preventDefault();
-});
-
 board = Chessboard('board', config);
+setDefaultBoardStyle();
 
 // Place the flag in an initial position.
-$('#board .square-' + INITIAL_FLAG_SQUARE).css({
-  'background-image': "url('img/green_flag.png')",
-  'background-repeat': 'no-repeat',
-  'background-size': `${SQUARE_SIZE}px ${SQUARE_SIZE}px`,
-})
+putFlagOnSquare(INITIAL_FLAG_SQUARE);
 
 // create the dragged flag
 $('body').append(buildFlagHtml(DRAGGED_FLAG_ID, true))
@@ -250,3 +217,5 @@ $(window)
     .on('mouseup', mouseupWindow);
 
 $('#board .square-a1').addClass('attacked-square');
+
+$('.spare-pieces-7492f').css('paddingLeft', '0px')
